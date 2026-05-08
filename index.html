@@ -1,208 +1,1470 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RVPN • Future VPN & AI</title>
-
-<!-- TELEGRAM -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RVPN — Future VPN & AI Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-:root{
-  --bg:#0b0f1a;
-  --card:#12182b;
-  --accent:#00f6ff;
-  --accent2:#4cff8f;
-  --text:#ffffff;
-  --muted:#9aa4bf;
+:root {
+  --bg: #050508;
+  --surface: #0d0d14;
+  --surface2: #13131e;
+  --border: rgba(255,255,255,0.07);
+  --accent: #00f5a0;
+  --accent2: #00c8ff;
+  --accent3: #7b5ea7;
+  --text: #e8e8f0;
+  --muted: #6b6b80;
+  --danger: #ff4060;
+  --warn: #ffa040;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --glow: 0 0 30px rgba(0,245,160,0.15);
+  --glow2: 0 0 30px rgba(0,200,255,0.12);
 }
+.light {
+  --bg: #f0f2f7;
+  --surface: #ffffff;
+  --surface2: #e8eaf2;
+  --border: rgba(0,0,0,0.08);
+  --text: #111120;
+  --muted: #6b6b80;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 body{
-  margin:0;
-  font-family:Inter,system-ui;
-  background:linear-gradient(160deg,#070b14,#0b1226);
+  font-family:'Syne',sans-serif;
+  background:var(--bg);
   color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  transition:background .3s,color .3s;
 }
-header{
-  padding:20px;
-  text-align:center;
-  font-size:24px;
-  font-weight:700;
-  letter-spacing:1px;
+
+/* ─── NOISE OVERLAY ─── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.5;
 }
-nav{
+
+/* ─── GRID BACKGROUND ─── */
+.grid-bg{
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,245,160,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,245,160,0.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* ─── GLOW ORBS ─── */
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;animation:orbFloat 8s ease-in-out infinite;}
+.orb1{width:400px;height:400px;background:rgba(0,245,160,0.06);top:-100px;right:-100px;}
+.orb2{width:300px;height:300px;background:rgba(0,200,255,0.05);bottom:0;left:-50px;animation-delay:-4s;}
+@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+
+/* ─── LAYOUT ─── */
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  background:rgba(13,13,20,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;letter-spacing:-0.5px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+.logo span{color:var(--accent);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.icon-btn{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:.2s;
+}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ─── NAV TABS ─── */
+.nav-tabs{
   display:flex;
-  justify-content:space-around;
-  padding:10px;
-  background:#080d1f;
-  position:sticky;
-  bottom:0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+  scrollbar-width:none;
+  position:sticky;top:65px;z-index:90;
 }
-nav button{
-  background:none;
-  border:none;
+.nav-tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:1;min-width:70px;
+  padding:12px 8px;
+  text-align:center;
+  cursor:pointer;
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.5px;
   color:var(--muted);
-  font-size:14px;
+  border-bottom:2px solid transparent;
+  transition:.2s;
+  white-space:nowrap;
 }
-nav button.active{color:var(--accent);}
-section{display:none;padding:20px;}
-section.active{display:block;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-icon{font-size:1rem;display:block;margin-bottom:2px;}
+
+/* ─── PAGES ─── */
+.page{display:none;padding:20px;flex:1;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ─── CARD ─── */
 .card{
-  background:var(--card);
-  border-radius:16px;
-  padding:16px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
   margin-bottom:16px;
-  box-shadow:0 0 40px #00000040;
 }
-button.main{
+.card-title{font-size:.75rem;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
+
+/* ─── VPN CONNECT HERO ─── */
+.connect-hero{
+  text-align:center;
+  padding:30px 20px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.connect-hero::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center top,rgba(0,245,160,0.07),transparent 60%);
+  pointer-events:none;
+}
+.vpn-btn{
+  width:120px;height:120px;border-radius:50%;
+  border:2px solid var(--border);
+  background:var(--surface2);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:4px;
+  margin:0 auto 20px;
+  font-size:2rem;
+  transition:.3s;
+  position:relative;
+}
+.vpn-btn::before{
+  content:'';
+  position:absolute;inset:-8px;
+  border-radius:50%;
+  border:1px solid transparent;
+  transition:.3s;
+}
+.vpn-btn.on{
+  border-color:var(--accent);
+  box-shadow:0 0 40px rgba(0,245,160,0.3),0 0 80px rgba(0,245,160,0.1);
+}
+.vpn-btn.on::before{border-color:rgba(0,245,160,0.2);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.5}}
+.vpn-btn-label{font-size:.75rem;font-weight:700;letter-spacing:1px;}
+.status-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;
+  font-size:.75rem;font-weight:700;letter-spacing:.5px;
+  background:rgba(255,64,96,0.12);color:var(--danger);
+  transition:.3s;
+}
+.status-badge.on{background:rgba(0,245,160,0.12);color:var(--accent);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.connect-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:12px;margin-top:20px;
+}
+.stat-item{text-align:center;}
+.stat-val{font-size:1rem;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace;}
+.stat-lbl{font-size:.65rem;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ─── SERVER SELECTOR ─── */
+.server-select-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:.2s;
+  margin-bottom:16px;
+}
+.server-select-btn:hover{border-color:var(--accent2);}
+.server-info{display:flex;align-items:center;gap:10px;}
+.flag-emoji{font-size:1.4rem;}
+.server-name{font-weight:700;font-size:.9rem;}
+.server-ping{font-size:.7rem;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+
+/* ─── PROTOCOL PILLS ─── */
+.proto-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.proto-pill{
+  padding:6px 14px;border-radius:20px;
+  border:1px solid var(--border);
+  font-size:.72rem;font-weight:600;
+  cursor:pointer;transition:.2s;color:var(--muted);
+}
+.proto-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(0,245,160,0.08);}
+
+/* ─── COUNTRY MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);
+  z-index:1000;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  width:100%;max-width:480px;
+  background:var(--surface);
+  border-radius:20px 20px 0 0;
+  border:1px solid var(--border);
+  border-bottom:none;
+  max-height:80vh;
+  display:flex;flex-direction:column;
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(40px)}to{transform:none}}
+.modal-header{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-title{font-weight:800;font-size:1rem;}
+.modal-search{
+  padding:12px 20px;
+  border-bottom:1px solid var(--border);
+}
+.search-input{
   width:100%;
-  padding:14px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:10px 14px;
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:.9rem;
+  outline:none;
+  transition:.2s;
+}
+.search-input:focus{border-color:var(--accent);}
+.country-list{overflow-y:auto;flex:1;}
+.country-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  cursor:pointer;
+  transition:.15s;
+  border-bottom:1px solid var(--border);
+}
+.country-item:hover{background:var(--surface2);}
+.country-left{display:flex;align-items:center;gap:10px;}
+.country-flag{font-size:1.2rem;}
+.country-name{font-weight:600;font-size:.88rem;}
+.country-servers{font-size:.7rem;color:var(--muted);}
+.ping-tag{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:3px 8px;border-radius:10px;background:rgba(0,245,160,0.1);color:var(--accent);}
+.ping-tag.med{background:rgba(255,160,64,0.1);color:var(--warn);}
+.ping-tag.high{background:rgba(255,64,96,0.1);color:var(--danger);}
+
+/* ─── AI CHAT ─── */
+.ai-chat{display:flex;flex-direction:column;height:calc(100vh - 190px);}
+.chat-messages{flex:1;overflow-y:auto;padding:4px 0;display:flex;flex-direction:column;gap:12px;}
+.msg{
+  display:flex;gap:10px;
+  animation:fadeIn .3s ease;
+}
+.msg.user{flex-direction:row-reverse;}
+.msg-avatar{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;flex-shrink:0;
+}
+.msg.ai .msg-avatar{background:linear-gradient(135deg,var(--accent),var(--accent2));}
+.msg.user .msg-avatar{background:var(--surface2);}
+.msg-bubble{
+  max-width:80%;
+  padding:12px 16px;
   border-radius:14px;
-  border:none;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  color:#000;
-  font-weight:700;
+  font-size:.88rem;
+  line-height:1.5;
 }
-select,input,textarea{
-  width:100%;
-  padding:12px;
+.msg.ai .msg-bubble{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px 14px 14px 14px;
+}
+.msg.user .msg-bubble{
+  background:linear-gradient(135deg,rgba(0,245,160,0.2),rgba(0,200,255,0.15));
+  border:1px solid rgba(0,245,160,0.2);
+  border-radius:14px 4px 14px 14px;
+}
+.chat-input-area{
+  display:flex;gap:8px;padding:12px 0 0;
+  border-top:1px solid var(--border);
+  margin-top:12px;
+}
+.chat-input{
+  flex:1;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:.88rem;
+  outline:none;resize:none;
+  transition:.2s;height:44px;
+}
+.chat-input:focus{border-color:var(--accent2);height:88px;}
+.send-btn{
+  width:44px;height:44px;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+  transition:.2s;
+}
+.send-btn:hover{transform:scale(1.05);}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:4px 0;}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:typingBounce 1.2s ease-in-out infinite;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes typingBounce{0%,80%,100%{transform:scale(0.7);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* ─── PROXY LIST ─── */
+.proxy-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.proxy-item:last-child{border-bottom:none;}
+.proxy-left{display:flex;flex-direction:column;gap:3px;}
+.proxy-name{font-weight:700;font-size:.88rem;}
+.proxy-addr{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);}
+.copy-btn{
+  padding:6px 12px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:transparent;color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:.2s;
+}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+.copy-btn.copied{border-color:var(--accent);color:var(--accent);background:rgba(0,245,160,0.08);}
+
+/* ─── SPEEDTEST ─── */
+.speedtest-circle{
+  width:160px;height:160px;
+  border-radius:50%;
+  border:3px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:20px auto;
+  position:relative;
+  background:var(--surface2);
+}
+.speed-num{font-size:2rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.speed-unit{font-size:.7rem;color:var(--muted);letter-spacing:1px;}
+.speed-ring{
+  position:absolute;inset:-3px;
+  border-radius:50%;
+  border:3px solid transparent;
+  border-top-color:var(--accent);
+  border-right-color:var(--accent2);
+  animation:spinRing 2s linear infinite;
+}
+.speed-ring.hidden{display:none;}
+@keyframes spinRing{to{transform:rotate(360deg)}}
+.speed-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.speed-box{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  text-align:center;
+}
+.speed-box-val{font-size:1.2rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.speed-box-lbl{font-size:.65rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* ─── SETTINGS ─── */
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-weight:600;font-size:.88rem;}
+.setting-desc{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.toggle{
+  width:44px;height:24px;
   border-radius:12px;
-  border:none;
-  background:#0c1330;
-  color:white;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  cursor:pointer;position:relative;transition:.3s;
 }
-.fade{animation:fade .5s}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+.toggle.on{background:var(--accent);border-color:var(--accent);}
+.toggle::after{
+  content:'';
+  position:absolute;
+  width:18px;height:18px;
+  border-radius:50%;
+  background:#fff;
+  top:2px;left:2px;
+  transition:.3s;
+}
+.toggle.on::after{transform:translateX(20px);}
+.select-input{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:6px 10px;
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:.82rem;
+  outline:none;cursor:pointer;
+}
+
+/* ─── LOGIN SCREEN ─── */
+.login-screen{
+  position:fixed;inset:0;z-index:500;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:30px;
+  text-align:center;
+  animation:fadeIn .4s ease;
+}
+.login-logo{font-size:4rem;margin-bottom:16px;}
+.login-title{font-size:2rem;font-weight:800;margin-bottom:8px;}
+.login-title span{color:var(--accent);}
+.login-sub{color:var(--muted);font-size:.9rem;margin-bottom:40px;line-height:1.5;}
+.login-btn{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 32px;border-radius:var(--radius);
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+  cursor:pointer;border:none;
+  transition:.2s;width:100%;justify-content:center;
+  margin-bottom:12px;
+}
+.tg-btn{background:linear-gradient(135deg,#2AABEE,#229ED9);color:#fff;}
+.guest-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+
+/* ─── VPN RECOMMENDATIONS ─── */
+.vpn-rec-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;transition:.2s;
+}
+.vpn-rec-item:last-child{border-bottom:none;}
+.vpn-rec-item:hover{transform:translateX(4px);}
+.vpn-logo-box{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+.vpn-rec-name{font-weight:700;font-size:.9rem;}
+.vpn-rec-tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+.tag{padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:700;letter-spacing:.5px;}
+.tag-free{background:rgba(0,245,160,0.12);color:var(--accent);}
+.tag-fast{background:rgba(0,200,255,0.12);color:var(--accent2);}
+.tag-paid{background:rgba(123,94,167,0.15);color:var(--accent3);}
+.tag-tor{background:rgba(255,160,64,0.12);color:var(--warn);}
+.tag-no-log{background:rgba(255,64,96,0.1);color:var(--danger);}
+.vpn-score{
+  margin-left:auto;
+  font-size:1rem;font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--accent);
+}
+
+/* ─── STATS DASHBOARD ─── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';
+  position:absolute;
+  top:0;right:0;
+  width:60px;height:60px;
+  background:radial-gradient(circle,rgba(0,245,160,0.08),transparent 70%);
+}
+.stat-card-val{font-size:1.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.stat-card-lbl{font-size:.68rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+.stat-card.blue .stat-card-val{color:var(--accent2);}
+.stat-card.blue::after{background:radial-gradient(circle,rgba(0,200,255,0.08),transparent 70%);}
+.stat-card.purple .stat-card-val{color:var(--accent3);}
+.stat-card.purple::after{background:radial-gradient(circle,rgba(123,94,167,0.1),transparent 70%);}
+.stat-card.warn .stat-card-val{color:var(--warn);}
+
+/* ─── MINI CHART ─── */
+.mini-chart{height:60px;display:flex;align-items:flex-end;gap:3px;padding:4px 0;}
+.bar{
+  flex:1;border-radius:3px 3px 0 0;
+  background:linear-gradient(to top,var(--accent),rgba(0,245,160,0.3));
+  transition:.3s;min-height:4px;
+}
+.bar:hover{opacity:.7;}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface);border:1px solid var(--accent);
+  border-radius:var(--radius-sm);padding:10px 20px;
+  font-size:.82rem;font-weight:600;color:var(--accent);
+  opacity:0;transition:.3s;z-index:9999;white-space:nowrap;
+  box-shadow:var(--glow);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ─── UTILITY ─── */
+.btn-primary{
+  width:100%;padding:14px;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;
+  color:#050508;letter-spacing:.5px;
+  transition:.2s;
+}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+.section-title{font-size:1rem;font-weight:800;margin-bottom:12px;}
+.badge-new{
+  display:inline-block;padding:2px 6px;
+  background:var(--accent);color:#050508;
+  border-radius:4px;font-size:.6rem;font-weight:800;
+  letter-spacing:.5px;margin-left:6px;vertical-align:middle;
+}
+
+/* ─── IP INFO ─── */
+.ip-box{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.8rem;
+  margin-bottom:12px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.ip-label{color:var(--muted);font-size:.65rem;letter-spacing:.5px;text-transform:uppercase;}
+.ip-val{font-weight:500;color:var(--text);}
+
+/* ─── BOTTOM NAV ─── */
+.bottom-safe{height:20px;}
 </style>
 </head>
-
 <body>
 
-<header>🚀 RVPN</header>
+<div class="grid-bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
 
-<!-- HOME -->
-<section id="home" class="active fade">
-  <div class="card">
-    <h2>🌐 Acceso Libre & Privado</h2>
-    <p>Proxies • VPNs • IA • 193 Países</p>
-    <button class="main" onclick="tgLogin()">Iniciar con Telegram</button>
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-logo">🛡️</div>
+  <h1 class="login-title">R<span>VPN</span></h1>
+  <p class="login-sub">Future VPN & AI Platform<br/>Privacy. Speed. Intelligence.</p>
+  <button class="login-btn tg-btn" onclick="loginTelegram()">
+    <span>✈️</span> Continue with Telegram
+  </button>
+  <button class="login-btn guest-btn" onclick="loginGuest()">
+    👤 Continue as Guest
+  </button>
+  <p style="font-size:.7rem;color:var(--muted);margin-top:20px;">No logs. No tracking. Open source.</p>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">🛡</div>
+      R<span>VPN</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</button>
+      <button class="icon-btn" onclick="showLangModal()" title="Language">🌍</button>
+      <button class="icon-btn" id="userBtn" onclick="showToast('👤 ' + currentUser)">👤</button>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>⚡ Estado</h3>
-    <p id="user">No conectado</p>
-  </div>
-</section>
-
-<!-- PROXIES -->
-<section id="proxy" class="fade">
-  <div class="card">
-    <h2>🔐 Proxies MTProto</h2>
-    <p>Conecta Telegram sin censura</p>
-    <button class="main">Conectar Proxy Activo</button>
-  </div>
-</section>
-
-<!-- VPN -->
-<section id="vpn" class="fade">
-  <div class="card">
-    <h2>🌍 VPNs Gratuitas</h2>
-    <p>Recomendadas y seguras</p>
-    <ul>
-      <li>• Proton VPN – Privacidad</li>
-      <li>• 1.1.1.1 – Velocidad</li>
-      <li>• RiseUp VPN – Anticensura</li>
-    </ul>
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <div class="tab active" onclick="showPage('vpn',this)"><span class="tab-icon">🔒</span>VPN</div>
+    <div class="tab" onclick="showPage('proxy',this)"><span class="tab-icon">📡</span>Proxy</div>
+    <div class="tab" onclick="showPage('ai',this)"><span class="tab-icon">🤖</span>AI</div>
+    <div class="tab" onclick="showPage('speed',this)"><span class="tab-icon">⚡</span>Speed</div>
+    <div class="tab" onclick="showPage('stats',this)"><span class="tab-icon">📊</span>Stats</div>
+    <div class="tab" onclick="showPage('vpns',this)"><span class="tab-icon">🏆</span>VPNs</div>
+    <div class="tab" onclick="showPage('settings',this)"><span class="tab-icon">⚙️</span>Settings</div>
   </div>
 
-  <div class="card">
-    <h3>🌎 País</h3>
-    <select id="country"></select>
-  </div>
-</section>
+  <!-- ─── VPN PAGE ─── -->
+  <div class="page active" id="page-vpn">
 
-<!-- AI -->
-<section id="ai" class="fade">
-  <div class="card">
-    <h2>🤖 IA RVPN</h2>
-    <textarea id="aiInput" placeholder="Pregúntame lo que quieras…"></textarea>
-    <button class="main" onclick="ai()">Enviar</button>
-    <p id="aiOut"></p>
-  </div>
-</section>
+    <div class="connect-hero">
+      <div class="vpn-btn" id="vpnBtn" onclick="toggleVPN()">
+        <span>⏻</span>
+        <span class="vpn-btn-label" id="btnLabel">TAP TO<br/>CONNECT</span>
+      </div>
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot"></span>
+        <span id="statusText">DISCONNECTED</span>
+      </div>
+      <div class="connect-stats" id="connectStats" style="opacity:.3">
+        <div class="stat-item">
+          <div class="stat-val" id="statDown">0.0</div>
+          <div class="stat-lbl">↓ MB/s</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="statUp">0.0</div>
+          <div class="stat-lbl">↑ MB/s</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="statPing">—</div>
+          <div class="stat-lbl">Ping ms</div>
+        </div>
+      </div>
+    </div>
 
-<!-- SETTINGS -->
-<section id="settings" class="fade">
-  <div class="card">
-    <h2>⚙️ Configuración</h2>
-    <label>Idioma</label>
-    <select>
-      <option>Español</option>
-      <option>English</option>
-      <option>Português</option>
-      <option>Français</option>
-      <option>العربية</option>
-      <option>Русский</option>
-      <option>中文</option>
-    </select>
-  </div>
-</section>
+    <div class="server-select-btn" onclick="openCountryModal()">
+      <div class="server-info">
+        <span class="flag-emoji" id="selectedFlag">🇺🇸</span>
+        <div>
+          <div class="server-name" id="selectedName">United States</div>
+          <div class="server-ping" id="selectedPing">⚡ 12ms · 47 servers</div>
+        </div>
+      </div>
+      <span style="color:var(--muted)">›</span>
+    </div>
 
-<nav>
-  <button onclick="go('home')" class="active">Inicio</button>
-  <button onclick="go('proxy')">Proxy</button>
-  <button onclick="go('vpn')">VPN</button>
-  <button onclick="go('ai')">IA</button>
-  <button onclick="go('settings')">Ajustes</button>
-</nav>
+    <div class="card">
+      <div class="card-title">Protocol</div>
+      <div class="proto-pills" id="protoPills">
+        <div class="proto-pill active" onclick="selectProto(this,'WireGuard')">WireGuard</div>
+        <div class="proto-pill" onclick="selectProto(this,'OpenVPN')">OpenVPN</div>
+        <div class="proto-pill" onclick="selectProto(this,'IKEv2')">IKEv2</div>
+        <div class="proto-pill" onclick="selectProto(this,'Shadowsocks')">Shadowsocks</div>
+        <div class="proto-pill" onclick="selectProto(this,'V2Ray')">V2Ray</div>
+        <div class="proto-pill" onclick="selectProto(this,'VLESS')">VLESS</div>
+        <div class="proto-pill" onclick="selectProto(this,'VMESS')">VMess</div>
+        <div class="proto-pill" onclick="selectProto(this,'XTLS')">XTLS</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your IP Info</div>
+      <div class="ip-box">
+        <div>
+          <div class="ip-label">Real IP</div>
+          <div class="ip-val" id="realIP">Loading...</div>
+        </div>
+        <span id="ipFlag">🌐</span>
+      </div>
+      <div class="ip-box" id="vpnIPBox" style="border-color:rgba(0,245,160,0.2)">
+        <div>
+          <div class="ip-label">VPN IP</div>
+          <div class="ip-val" id="vpnIP" style="color:var(--muted)">Not connected</div>
+        </div>
+        <span>🔒</span>
+      </div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ─── PROXY PAGE ─── -->
+  <div class="page" id="page-proxy">
+    <div class="section-title">MTProto Proxies <span class="badge-new">LIVE</span></div>
+
+    <div class="card">
+      <div class="card-title">Telegram MTProto</div>
+      <div id="mtprotoList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SOCKS5 Proxies</div>
+      <div id="socks5List"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">HTTP/HTTPS Proxies</div>
+      <div id="httpList"></div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <button class="btn-primary" onclick="refreshProxies()">🔄 Refresh All Proxies</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ─── AI PAGE ─── -->
+  <div class="page" id="page-ai">
+    <div class="section-title">AI Assistant <span class="badge-new">CLAUDE</span></div>
+    <div class="ai-chat">
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg ai">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">Hello! I'm your RVPN AI assistant powered by Claude. I can help you with:<br/><br/>• VPN setup & troubleshooting<br/>• Privacy & security advice<br/>• Protocol recommendations<br/>• Network diagnostics<br/>• Any other question!</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput" placeholder="Ask anything about VPN, privacy, security..." rows="1" onkeydown="handleChatKey(event)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ─── SPEED PAGE ─── -->
+  <div class="page" id="page-speed">
+    <div class="section-title">Speed Test</div>
+
+    <div class="card" style="text-align:center">
+      <div class="speedtest-circle">
+        <div class="speed-ring hidden" id="speedRing"></div>
+        <div class="speed-num" id="speedNum">--</div>
+        <div class="speed-unit">Mbps</div>
+      </div>
+      <button class="btn-primary" onclick="runSpeedTest()" id="speedBtn">▶ Run Speed Test</button>
+    </div>
+
+    <div class="speed-grid">
+      <div class="speed-box">
+        <div class="speed-box-val" id="pingResult" style="color:var(--accent)">-- ms</div>
+        <div class="speed-box-lbl">Ping</div>
+      </div>
+      <div class="speed-box">
+        <div class="speed-box-val" id="jitterResult" style="color:var(--accent2)">-- ms</div>
+        <div class="speed-box-lbl">Jitter</div>
+      </div>
+      <div class="speed-box">
+        <div class="speed-box-val" id="downResult" style="color:var(--accent)">-- Mbps</div>
+        <div class="speed-box-lbl">Download</div>
+      </div>
+      <div class="speed-box">
+        <div class="speed-box-val" id="upResult" style="color:var(--accent3)">-- Mbps</div>
+        <div class="speed-box-lbl">Upload</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">History</div>
+      <div id="speedHistory" style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--muted);text-align:center;padding:10px 0;">No tests yet.</div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ─── STATS PAGE ─── -->
+  <div class="page" id="page-stats">
+    <div class="section-title">Session Stats</div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-val" id="totalDown">0 MB</div>
+        <div class="stat-card-lbl">Downloaded</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-card-val" id="totalUp">0 MB</div>
+        <div class="stat-card-lbl">Uploaded</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-card-val" id="connTime">00:00</div>
+        <div class="stat-card-lbl">Connected</div>
+      </div>
+      <div class="stat-card warn">
+        <div class="stat-card-val" id="totalSessions">0</div>
+        <div class="stat-card-lbl">Sessions</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Traffic (last 12h)</div>
+      <div class="mini-chart" id="miniChart"></div>
+      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace;">
+        <span>12h ago</span><span>6h ago</span><span>Now</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Connection Log</div>
+      <div id="connLog" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);line-height:1.8;">
+        — No connections yet —
+      </div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ─── VPN RECOMMENDATIONS PAGE ─── -->
+  <div class="page" id="page-vpns">
+    <div class="section-title">Top VPN Services 2026</div>
+
+    <div class="card">
+      <div class="card-title">Ranked by Privacy & Speed</div>
+      <div id="vpnRecList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Free Options</div>
+      <div id="freeVpnList"></div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ─── SETTINGS PAGE ─── -->
+  <div class="page" id="page-settings">
+    <div class="section-title">Settings</div>
+
+    <div class="card">
+      <div class="card-title">Connection</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Kill Switch</div>
+          <div class="setting-desc">Block internet if VPN drops</div>
+        </div>
+        <div class="toggle on" onclick="toggleSetting(this)"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Auto-Connect</div>
+          <div class="setting-desc">Connect on app launch</div>
+        </div>
+        <div class="toggle" onclick="toggleSetting(this)"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Split Tunneling</div>
+          <div class="setting-desc">Route specific apps outside VPN</div>
+        </div>
+        <div class="toggle" onclick="toggleSetting(this)"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">DNS Leak Protection</div>
+          <div class="setting-desc">Force DNS through VPN tunnel</div>
+        </div>
+        <div class="toggle on" onclick="toggleSetting(this)"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">IPv6 Leak Protection</div>
+          <div class="setting-desc">Block IPv6 when connected</div>
+        </div>
+        <div class="toggle on" onclick="toggleSetting(this)"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Privacy</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">No-Log Mode</div>
+          <div class="setting-desc">Zero connection logs stored</div>
+        </div>
+        <div class="toggle on" onclick="toggleSetting(this)"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Obfuscation</div>
+          <div class="setting-desc">Hide VPN traffic as HTTPS</div>
+        </div>
+        <div class="toggle" onclick="toggleSetting(this)"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">WebRTC Leak Block</div>
+          <div class="setting-desc">Prevent browser IP leaks</div>
+        </div>
+        <div class="toggle on" onclick="toggleSetting(this)"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Appearance & Language</div>
+      <div class="setting-row">
+        <div><div class="setting-label">Dark Mode</div></div>
+        <div class="toggle on" id="darkModeToggle" onclick="toggleTheme()"></div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Language</div></div>
+        <select class="select-input" onchange="setLang(this.value)">
+          <option value="en">🇺🇸 English</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="ru">🇷🇺 Русский</option>
+          <option value="zh">🇨🇳 中文</option>
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="pt">🇧🇷 Português</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="fa">🇮🇷 فارسی</option>
+          <option value="tr">🇹🇷 Türkçe</option>
+          <option value="hi">🇮🇳 हिन्दी</option>
+          <option value="ja">🇯🇵 日本語</option>
+          <option value="ko">🇰🇷 한국어</option>
+          <option value="uk">🇺🇦 Українська</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">DNS Server</div></div>
+        <select class="select-input">
+          <option>Cloudflare (1.1.1.1)</option>
+          <option>Google (8.8.8.8)</option>
+          <option>Quad9 (9.9.9.9)</option>
+          <option>AdGuard</option>
+          <option>Custom...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">About</div>
+      <div class="setting-row">
+        <div><div class="setting-label">Version</div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--muted)">2.6.0</span>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Protocol</div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent)" id="currentProtoLabel">WireGuard</span>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Logout</div></div>
+        <button style="background:rgba(255,64,96,0.12);border:1px solid var(--danger);color:var(--danger);padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+</div>
+
+<!-- COUNTRY MODAL -->
+<div class="modal-overlay" id="countryModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🌍 Select Server</div>
+      <button class="icon-btn" onclick="closeCountryModal()">✕</button>
+    </div>
+    <div class="modal-search">
+      <input class="search-input" id="countrySearch" placeholder="Search country..." oninput="filterCountries(this.value)"/>
+    </div>
+    <div class="country-list" id="countryList"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
-const sections=document.querySelectorAll("section");
-function go(id){
- sections.forEach(s=>s.classList.remove("active"));
- document.getElementById(id).classList.add("active");
- document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- event.target.classList.add("active");
-}
-
-function tgLogin(){
- if(window.Telegram){
-  Telegram.WebApp.ready();
-  document.getElementById("user").innerText=
-   "Conectado: "+Telegram.WebApp.initDataUnsafe.user.first_name;
- }
-}
-
-function ai(){
- let q=document.getElementById("aiInput").value;
- document.getElementById("aiOut").innerText=
-  "🤖 Respuesta inteligente: "+q+" (IA gratuita activa)";
-}
-
-/* === 193 PAISES === */
-const countries=[
-"Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
-"Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
-"Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon",
-"Canada","Cape Verde","Central African Republic","Chad","Chile","China","Colombia","Comoros","Costa Rica","Croatia",
-"Cuba","Cyprus","Czech Republic","Denmark","Dominican Republic","Ecuador","Egypt","El Salvador","Estonia","Ethiopia",
-"Finland","France","Gabon","Georgia","Germany","Ghana","Greece","Guatemala","Haiti","Honduras",
-"Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica",
-"Japan","Jordan","Kazakhstan","Kenya","Kuwait","Latvia","Lebanon","Liberia","Libya","Lithuania",
-"Luxembourg","Madagascar","Malaysia","Maldives","Mali","Malta","Mexico","Moldova","Mongolia","Morocco",
-"Netherlands","New Zealand","Nicaragua","Nigeria","North Korea","Norway","Oman","Pakistan","Panama","Paraguay",
-"Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saudi Arabia","Senegal",
-"Serbia","Singapore","Slovakia","Slovenia","Somalia","South Africa","South Korea","Spain","Sri Lanka","Sudan",
-"Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Tunisia","Turkey","Uganda",
-"Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+// ─── DATA ───────────────────────────────────────────────
+const COUNTRIES = [
+  {flag:"🇺🇸",name:"United States",servers:47,ping:12},{flag:"🇬🇧",name:"United Kingdom",servers:23,ping:18},
+  {flag:"🇩🇪",name:"Germany",servers:31,ping:22},{flag:"🇫🇷",name:"France",servers:19,ping:25},
+  {flag:"🇳🇱",name:"Netherlands",servers:28,ping:20},{flag:"🇯🇵",name:"Japan",servers:15,ping:85},
+  {flag:"🇸🇬",name:"Singapore",servers:22,ping:60},{flag:"🇨🇦",name:"Canada",servers:18,ping:35},
+  {flag:"🇦🇺",name:"Australia",servers:12,ping:120},{flag:"🇧🇷",name:"Brazil",servers:9,ping:95},
+  {flag:"🇮🇳",name:"India",servers:14,ping:75},{flag:"🇰🇷",name:"South Korea",servers:10,ping:90},
+  {flag:"🇨🇭",name:"Switzerland",servers:16,ping:28},{flag:"🇸🇪",name:"Sweden",servers:11,ping:30},
+  {flag:"🇳🇴",name:"Norway",servers:8,ping:35},{flag:"🇩🇰",name:"Denmark",servers:7,ping:32},
+  {flag:"🇫🇮",name:"Finland",servers:6,ping:38},{flag:"🇦🇹",name:"Austria",servers:8,ping:26},
+  {flag:"🇧🇪",name:"Belgium",servers:9,ping:22},{flag:"🇵🇱",name:"Poland",servers:10,ping:40},
+  {flag:"🇪🇸",name:"Spain",servers:12,ping:30},{flag:"🇮🇹",name:"Italy",servers:11,ping:35},
+  {flag:"🇵🇹",name:"Portugal",servers:6,ping:32},{flag:"🇨🇿",name:"Czech Republic",servers:8,ping:38},
+  {flag:"🇷🇴",name:"Romania",servers:7,ping:45},{flag:"🇭🇺",name:"Hungary",servers:5,ping:42},
+  {flag:"🇬🇷",name:"Greece",servers:4,ping:50},{flag:"🇹🇷",name:"Turkey",servers:8,ping:60},
+  {flag:"🇺🇦",name:"Ukraine",servers:6,ping:55},{flag:"🇷🇺",name:"Russia",servers:5,ping:65},
+  {flag:"🇺🇿",name:"Uzbekistan",servers:3,ping:90},{flag:"🇰🇿",name:"Kazakhstan",servers:3,ping:85},
+  {flag:"🇦🇿",name:"Azerbaijan",servers:2,ping:95},{flag:"🇬🇪",name:"Georgia",servers:2,ping:85},
+  {flag:"🇦🇲",name:"Armenia",servers:2,ping:90},{flag:"🇮🇷",name:"Iran",servers:3,ping:110},
+  {flag:"🇮🇱",name:"Israel",servers:5,ping:70},{flag:"🇦🇪",name:"UAE",servers:8,ping:65},
+  {flag:"🇸🇦",name:"Saudi Arabia",servers:4,ping:70},{flag:"🇶🇦",name:"Qatar",servers:3,ping:72},
+  {flag:"🇰🇼",name:"Kuwait",servers:2,ping:75},{flag:"🇧🇭",name:"Bahrain",servers:2,ping:73},
+  {flag:"🇪🇬",name:"Egypt",servers:4,ping:80},{flag:"🇳🇬",name:"Nigeria",servers:3,ping:110},
+  {flag:"🇿🇦",name:"South Africa",servers:6,ping:95},{flag:"🇰🇪",name:"Kenya",servers:2,ping:120},
+  {flag:"🇲🇦",name:"Morocco",servers:2,ping:85},{flag:"🇩🇿",name:"Algeria",servers:2,ping:90},
+  {flag:"🇹🇳",name:"Tunisia",servers:2,ping:88},{flag:"🇿🇼",name:"Zimbabwe",servers:1,ping:140},
+  {flag:"🇨🇳",name:"China",servers:2,ping:130},{flag:"🇹🇼",name:"Taiwan",servers:7,ping:95},
+  {flag:"🇭🇰",name:"Hong Kong",servers:14,ping:75},{flag:"🇲🇴",name:"Macau",servers:3,ping:80},
+  {flag:"🇹🇭",name:"Thailand",servers:6,ping:80},{flag:"🇻🇳",name:"Vietnam",servers:4,ping:90},
+  {flag:"🇮🇩",name:"Indonesia",servers:5,ping:100},{flag:"🇲🇾",name:"Malaysia",servers:7,ping:75},
+  {flag:"🇵🇭",name:"Philippines",servers:4,ping:105},{flag:"🇧🇩",name:"Bangladesh",servers:2,ping:110},
+  {flag:"🇵🇰",name:"Pakistan",servers:3,ping:100},{flag:"🇱🇰",name:"Sri Lanka",servers:2,ping:115},
+  {flag:"🇳🇵",name:"Nepal",servers:1,ping:120},{flag:"🇲🇲",name:"Myanmar",servers:1,ping:130},
+  {flag:"🇲🇽",name:"Mexico",servers:8,ping:55},{flag:"🇦🇷",name:"Argentina",servers:5,ping:100},
+  {flag:"🇨🇱",name:"Chile",servers:4,ping:110},{flag:"🇨🇴",name:"Colombia",servers:4,ping:105},
+  {flag:"🇵🇪",name:"Peru",servers:3,ping:115},{flag:"🇻🇪",name:"Venezuela",servers:2,ping:120},
+  {flag:"🇪🇨",name:"Ecuador",servers:2,ping:110},{flag:"🇺🇾",name:"Uruguay",servers:2,ping:115},
+  {flag:"🇧🇴",name:"Bolivia",servers:1,ping:130},{flag:"🇵🇾",name:"Paraguay",servers:1,ping:125},
+  {flag:"🇳🇿",name:"New Zealand",servers:5,ping:130},{flag:"🇮🇸",name:"Iceland",servers:4,ping:45},
+  {flag:"🇱🇺",name:"Luxembourg",servers:5,ping:22},{flag:"🇮🇪",name:"Ireland",servers:8,ping:25},
+  {flag:"🇸🇰",name:"Slovakia",servers:3,ping:40},{flag:"🇸🇮",name:"Slovenia",servers:3,ping:38},
+  {flag:"🇭🇷",name:"Croatia",servers:3,ping:42},{flag:"🇧🇦",name:"Bosnia",servers:2,ping:50},
+  {flag:"🇷🇸",name:"Serbia",servers:4,ping:48},{flag:"🇧🇬",name:"Bulgaria",servers:4,ping:45},
+  {flag:"🇲🇰",name:"N. Macedonia",servers:2,ping:52},{flag:"🇦🇱",name:"Albania",servers:2,ping:55},
+  {flag:"🇲🇪",name:"Montenegro",servers:1,ping:55},{flag:"🇲🇩",name:"Moldova",servers:2,ping:58},
+  {flag:"🇧🇾",name:"Belarus",servers:2,ping:60},{flag:"🇱🇻",name:"Latvia",servers:3,ping:38},
+  {flag:"🇱🇹",name:"Lithuania",servers:3,ping:36},{flag:"🇪🇪",name:"Estonia",servers:4,ping:35},
+  {flag:"🇯🇴",name:"Jordan",servers:2,ping:78},{flag:"🇱🇧",name:"Lebanon",servers:2,ping:82},
+  {flag:"🇮🇶",name:"Iraq",servers:1,ping:100},{flag:"🇸🇾",name:"Syria",servers:1,ping:110},
+  {flag:"🇾🇪",name:"Yemen",servers:1,ping:130},{flag:"🇱🇾",name:"Libya",servers:1,ping:120},
+  {flag:"🇸🇩",name:"Sudan",servers:1,ping:125},{flag:"🇪🇹",name:"Ethiopia",servers:1,ping:135},
+  {flag:"🇹🇿",name:"Tanzania",servers:1,ping:130},{flag:"🇺🇬",name:"Uganda",servers:1,ping:135},
+  {flag:"🇷🇼",name:"Rwanda",servers:1,ping:140},{flag:"🇬🇭",name:"Ghana",servers:2,ping:115},
+  {flag:"🇨🇲",name:"Cameroon",servers:1,ping:120},{flag:"🇸🇳",name:"Senegal",servers:1,ping:118},
+  {flag:"🇨🇮",name:"Ivory Coast",servers:1,ping:120},{flag:"🇦🇴",name:"Angola",servers:1,ping:130},
+  {flag:"🇲🇿",name:"Mozambique",servers:1,ping:140},{flag:"🇵🇦",name:"Panama",servers:2,ping:75},
+  {flag:"🇨🇷",name:"Costa Rica",servers:2,ping:78},{flag:"🇬🇹",name:"Guatemala",servers:1,ping:80},
+  {flag:"🇭🇳",name:"Honduras",servers:1,ping:85},{flag:"🇸🇻",name:"El Salvador",servers:1,ping:82},
+  {flag:"🇳🇮",name:"Nicaragua",servers:1,ping:88},{flag:"🇯🇲",name:"Jamaica",servers:1,ping:80},
+  {flag:"🇨🇺",name:"Cuba",servers:1,ping:95},{flag:"🇩🇴",name:"Dominican Rep.",servers:2,ping:75},
+  {flag:"🇭🇹",name:"Haiti",servers:1,ping:90},{flag:"🇹🇹",name:"Trinidad",servers:1,ping:78},
+  {flag:"🇰🇭",name:"Cambodia",servers:2,ping:95},{flag:"🇱🇦",name:"Laos",servers:1,ping:100},
+  {flag:"🇧🇳",name:"Brunei",servers:1,ping:85},{flag:"🇹🇱",name:"Timor-Leste",servers:1,ping:130},
+  {flag:"🇵🇬",name:"Papua N. Guinea",servers:1,ping:150},{flag:"🇫🇯",name:"Fiji",servers:1,ping:160},
+  {flag:"🇲🇳",name:"Mongolia",servers:1,ping:100},{flag:"🇹🇲",name:"Turkmenistan",servers:1,ping:110},
+  {flag:"🇹🇯",name:"Tajikistan",servers:1,ping:105},{flag:"🇰🇬",name:"Kyrgyzstan",servers:1,ping:108},
+  {flag:"🇦🇫",name:"Afghanistan",servers:1,ping:120},{flag:"🇲🇻",name:"Maldives",servers:1,ping:100},
+  {flag:"🇪🇺",name:"EU Shared",servers:88,ping:18},{flag:"🇺🇳",name:"Multi-region",servers:200,ping:15},
 ];
-const sel=document.getElementById("country");
-countries.forEach(c=>{
- let o=document.createElement("option");
- o.textContent=c;
- sel.appendChild(o);
-});
-</script>
 
+const VPN_RECS = [
+  {emoji:"🔐",name:"Mullvad",tags:["no-log","paid","fast"],score:"9.8",color:"#00f5a0",desc:"Best privacy. Anonymous accounts, no email needed."},
+  {emoji:"🛡",name:"ProtonVPN",tags:["no-log","free","paid"],score:"9.6",color:"#00c8ff",desc:"Swiss-based. Free tier available. Open source."},
+  {emoji:"⚡",name:"Windscribe",tags:["free","fast","no-log"],score:"9.2",color:"#7b5ea7",desc:"10GB/month free. R.O.B.E.R.T ad blocker included."},
+  {emoji:"🦅",name:"ExpressVPN",tags:["paid","fast"],score:"9.0",color:"#ffa040",desc:"Fastest speeds. Lightway protocol. 94 countries."},
+  {emoji:"🐺",name:"NordVPN",tags:["paid","fast","no-log"],score:"8.9",color:"#00c8ff",desc:"Double VPN. Onion over VPN. Threat Protection."},
+  {emoji:"🕵️",name:"Tor Browser",tags:["free","tor"],score:"8.5",color:"#7b5ea7",desc:"Maximum anonymity. Slower but untraceable."},
+];
+
+const FREE_VPNS = [
+  {emoji:"🆓",name:"ProtonVPN Free",tags:["free","no-log"],score:"9.1",color:"#00c8ff",desc:"No data limit. 3 countries. No ads."},
+  {emoji:"🆓",name:"Windscribe Free",tags:["free"],score:"8.7",color:"#7b5ea7",desc:"10GB/month. 11 countries. Ad blocker."},
+  {emoji:"🆓",name:"TunnelBear Free",tags:["free"],score:"7.5",color:"#ffa040",desc:"500MB/month. Easy UI. Audited."},
+  {emoji:"🆓",name:"Hotspot Shield",tags:["free","fast"],score:"7.2",color:"#00f5a0",desc:"500MB/day. Hydra protocol. Fast."},
+];
+
+const MTPROTO_PROXIES = [
+  {name:"RVPN-MTProto-DE",host:"proxy.rvpn.io",port:443,secret:"ee367a189f143e93b2cb849f8a89b032db",country:"🇩🇪"},
+  {name:"RVPN-MTProto-NL",host:"nl.proxy.rvpn.io",port:443,secret:"dd9b17c9f15eac94bb6b75c51bde0d5c7a",country:"🇳🇱"},
+  {name:"RVPN-MTProto-US",host:"us.proxy.rvpn.io",port:443,secret:"ff4a2b8c9e1d3f7a5b6c0e2f4a8d1b3c5e",country:"🇺🇸"},
+  {name:"RVPN-MTProto-SG",host:"sg.proxy.rvpn.io",port:443,secret:"cc7d3e9f2a1b4c8d6e0f5a2b3c7d1e4f6a",country:"🇸🇬"},
+];
+
+const SOCKS5_PROXIES = [
+  {name:"SOCKS5-US-1",host:"socks5-us1.rvpn.io",port:1080,country:"🇺🇸"},
+  {name:"SOCKS5-EU-1",host:"socks5-eu1.rvpn.io",port:1080,country:"🇩🇪"},
+  {name:"SOCKS5-ASIA-1",host:"socks5-sg.rvpn.io",port:1080,country:"🇸🇬"},
+];
+
+const HTTP_PROXIES = [
+  {name:"HTTP-US",host:"http-us.rvpn.io",port:8080,country:"🇺🇸"},
+  {name:"HTTPS-EU",host:"https-eu.rvpn.io",port:443,country:"🇳🇱"},
+  {name:"HTTP-ASIA",host:"http-sg.rvpn.io",port:3128,country:"🇸🇬"},
+];
+
+// ─── STATE ───────────────────────────────────────────────
+let vpnOn = false;
+let currentUser = "Guest";
+let currentProto = "WireGuard";
+let selectedCountry = COUNTRIES[0];
+let connInterval = null;
+let connSeconds = 0;
+let sessions = 0;
+let totalDL = 0;
+let totalUL = 0;
+let statsInterval = null;
+let chartData = Array(12).fill(0);
+let isDark = true;
+let speedHistory = [];
+
+// ─── LOGIN ───────────────────────────────────────────────
+function loginTelegram(){
+  currentUser = "Telegram User";
+  document.getElementById('userBtn').textContent = '✈️';
+  startApp();
+}
+function loginGuest(){
+  currentUser = "Guest User";
+  startApp();
+}
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  document.getElementById('mainApp').style.flexDirection='column';
+  initAll();
+}
+function logout(){
+  vpnOn=false;clearInterval(connInterval);clearInterval(statsInterval);
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  showToast('Logged out');
+}
+
+// ─── INIT ────────────────────────────────────────────────
+function initAll(){
+  renderCountryList(COUNTRIES);
+  renderProxies();
+  renderVPNRecs();
+  buildChart();
+  fetchIP();
+}
+
+// ─── PAGES ───────────────────────────────────────────────
+function showPage(name, tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  tab.classList.add('active');
+}
+
+// ─── THEME ───────────────────────────────────────────────
+function toggleTheme(){
+  isDark=!isDark;
+  document.body.classList.toggle('light',!isDark);
+  document.getElementById('themeBtn').textContent=isDark?'🌙':'☀️';
+  const dm=document.getElementById('darkModeToggle');
+  if(dm) dm.classList.toggle('on',isDark);
+}
+
+// ─── VPN CONNECT ─────────────────────────────────────────
+function toggleVPN(){
+  vpnOn=!vpnOn;
+  const btn=document.getElementById('vpnBtn');
+  const badge=document.getElementById('statusBadge');
+  const statusTxt=document.getElementById('statusText');
+  const stats=document.getElementById('connectStats');
+  const label=document.getElementById('btnLabel');
+  const vpnIPEl=document.getElementById('vpnIP');
+
+  if(vpnOn){
+    btn.classList.add('on');
+    badge.classList.add('on');
+    statusTxt.textContent='CONNECTING...';
+    label.textContent='CONNECTING';
+    setTimeout(()=>{
+      statusTxt.textContent='CONNECTED';
+      label.textContent='TAP TO\nDISCONNECT';
+      stats.style.opacity='1';
+      sessions++;
+      document.getElementById('totalSessions').textContent=sessions;
+      const fakeVPNIP = `10.${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}`;
+      vpnIPEl.textContent=fakeVPNIP;
+      vpnIPEl.style.color='var(--accent)';
+      startStats();
+      addLog(`Connected → ${selectedCountry.flag} ${selectedCountry.name} via ${currentProto}`);
+      showToast(`🔒 Connected to ${selectedCountry.name}`);
+    },1200);
+  } else {
+    btn.classList.remove('on');
+    badge.classList.remove('on');
+    statusTxt.textContent='DISCONNECTED';
+    label.textContent='TAP TO\nCONNECT';
+    stats.style.opacity='.3';
+    document.getElementById('statDown').textContent='0.0';
+    document.getElementById('statUp').textContent='0.0';
+    document.getElementById('statPing').textContent='—';
+    vpnIPEl.textContent='Not connected';
+    vpnIPEl.style.color='var(--muted)';
+    clearInterval(connInterval);
+    clearInterval(statsInterval);
+    connSeconds=0;
+    document.getElementById('connTime').textContent='00:00';
+    addLog(`Disconnected from ${selectedCountry.name}`);
+    showToast('🔓 Disconnected');
+  }
+}
+
+function startStats(){
+  connSeconds=0;
+  clearInterval(connInterval);
+  clearInterval(statsInterval);
+  connInterval=setInterval(()=>{
+    connSeconds++;
+    const m=String(Math.floor(connSeconds/60)).padStart(2,'0');
+    const s=String(connSeconds%60).padStart(2,'0');
+    document.getElementById('connTime').textContent=`${m}:${s}`;
+  },1000);
+  statsInterval=setInterval(()=>{
+    if(!vpnOn)return;
+    const d=(Math.random()*5+1).toFixed(1);
+    const u=(Math.random()*2+0.2).toFixed(1);
+    const p=Math.floor(Math.random()*20+5);
+    document.getElementById('statDown').textContent=d;
+    document.getElementById('statUp').textContent=u;
+    document.getElementById('statPing').textContent=p;
+    totalDL+=parseFloat(d)/8;
+    totalUL+=parseFloat(u)/8;
+    document.getElementById('totalDown').textContent=totalDL>1024?`${(totalDL/1024).toFixed(2)} GB`:`${totalDL.toFixed(0)} MB`;
+    document.getElementById('totalUp').textContent=totalUL>1024?`${(totalUL/1024).toFixed(2)} GB`:`${totalUL.toFixed(0)} MB`;
+    chartData.shift();chartData.push(parseFloat(d));
+    buildChart();
+  },2000);
+}
+
+// ─── PROTOCOL ────────────────────────────────────────────
+function selectProto(el,name){
+  document.querySelectorAll('.proto-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  currentProto=name;
+  document.getElementById('currentProtoLabel').textContent=name;
+  showToast('Protocol: '+name);
+}
+
+// ─── COUNTRY MODAL ───────────────────────────────────────
+function openCountryModal(){document.getElementById('countryModal').classList.add('open');}
+function closeCountryModal(){document.getElementById('countryModal').classList.remove('open');}
+function closeModalOutside(e){if(e.target===e.currentTarget)closeCountryModal();}
+
+function renderCountryList(list){
+  const el=document.getElementById('countryList');
+  el.innerHTML=list.map(c=>{
+    const pingClass=c.ping<30?'':'ping-tag'+(c.ping<80?' med':' high');
+    const pC=c.ping<30?'ping-tag':c.ping<80?'ping-tag med':'ping-tag high';
+    return `<div class="country-item" onclick="selectCountry(${COUNTRIES.indexOf(c)})">
+      <div class="country-left">
+        <span class="country-flag">${c.flag}</span>
+        <div>
+          <div class="country-name">${c.name}</div>
+          <div class="country-servers">${c.servers} server${c.servers>1?'s':''}</div>
+        </div>
+      </div>
+      <span class="${pC}">${c.ping}ms</span>
+    </div>`;
+  }).join('');
+}
+
+function filterCountries(q){
+  const filtered=COUNTRIES.filter(c=>c.name.toLowerCase().includes(q.toLowerCase()));
+  renderCountryList(filtered);
+}
+
+function selectCountry(idx){
+  selectedCountry=COUNTRIES[idx];
+  document.getElementById('selectedFlag').textContent=selectedCountry.flag;
+  document.getElementById('selectedName').textContent=selectedCountry.name;
+  document.getElementById('selectedPing').textContent=`⚡ ${selectedCountry.ping}ms · ${selectedCountry.servers} servers`;
+  closeCountryModal();
+  showToast(`${selectedCountry.flag} ${selectedCountry.name} selected`);
+}
+
+// ─── PROXIES ─────────────────────────────────────────────
+function renderProxies(){
+  renderProxyList('mtprotoList', MTPROTO_PROXIES, (p)=>`tg://proxy?server=${p.host}&port=${p.port}&secret=${p.secret}`);
+  renderProxyList('socks5List', SOCKS5_PROXIES, (p)=>`${p.host}:${p.port}`);
+  renderProxyList('httpList', HTTP_PROXIES, (p)=>`${p.host}:${p.port}`);
+}
+function renderProxyList(containerId, list, addrFn){
+  const el=document.getElementById(containerId);
+  el.innerHTML=list.map((p,i)=>`
+    <div class="proxy-item">
+      <div class="proxy-left">
+        <div class="proxy-name">${p.country} ${p.name}</div>
+        <div class="proxy-addr">${p.host}:${p.port}</div>
+      </div>
+      <button class="copy-btn" onclick="copyProxy(this,'${addrFn(p)}')">Copy</button>
+    </div>
+  `).join('');
+}
+function copyProxy(btn, text){
+  navigator.clipboard.writeText(text).catch(()=>{});
+  btn.textContent='✓ Copied';btn.classList.add('copied');
+  setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  showToast('📋 Copied!');
+}
+function refreshProxies(){showToast('🔄 Refreshing proxies...');}
+
+// ─── AI CHAT ─────────────────────────────────────────────
+async function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const txt=input.value.trim();
+  if(!txt)return;
+  input.value='';
+  input.style.height='44px';
+  addMsg('user',txt);
+  const typing=addTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'You are an expert VPN & cybersecurity AI assistant for RVPN. Be concise, helpful, and technical. Answer questions about VPN, privacy, protocols, security, proxies, and networking. Format responses clearly.',
+        messages:[{role:'user',content:txt}]
+      })
+    });
+    typing.remove();
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Sorry, I could not process that.';
+    addMsg('ai',reply);
+  }catch(e){
+    typing.remove();
+    addMsg('ai','⚠️ AI service unavailable. Please check your connection.\n\nFor VPN help: make sure you\'re using WireGuard protocol for best speeds, and enable Kill Switch in settings.');
+  }
+}
+function addMsg(role,text){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className=`msg ${role}`;
+  div.innerHTML=`<div class="msg-avatar">${role==='ai'?'🤖':'👤'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br/>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+function addTyping(){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='msg ai';
+  div.innerHTML=`<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+function handleChatKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+// ─── SPEED TEST ───────────────────────────────────────────
+function runSpeedTest(){
+  const ring=document.getElementById('speedRing');
+  const num=document.getElementById('speedNum');
+  const btn=document.getElementById('speedBtn');
+  ring.classList.remove('hidden');
+  btn.disabled=true;btn.textContent='Testing...';
+  num.textContent='...';
+  document.getElementById('pingResult').textContent='...';
+  document.getElementById('jitterResult').textContent='...';
+  document.getElementById('downResult').textContent='...';
+  document.getElementById('upResult').textContent='...';
+
+  const ping=rnd(5,80);
+  const jitter=rnd(1,15);
+  const down=(Math.random()*200+20).toFixed(1);
+  const up=(Math.random()*50+10).toFixed(1);
+
+  let count=0;
+  const steps=['Pinging servers...','Measuring download...','Measuring upload...','Calculating results...'];
+  const si=setInterval(()=>{
+    if(count>=steps.length){
+      clearInterval(si);
+      ring.classList.add('hidden');
+      num.textContent=down;
+      document.getElementById('pingResult').textContent=ping+'ms';
+      document.getElementById('jitterResult').textContent=jitter+'ms';
+      document.getElementById('downResult').textContent=down+' Mbps';
+      document.getElementById('upResult').textContent=up+' Mbps';
+      btn.disabled=false;btn.textContent='▶ Run Again';
+      const now=new Date().toLocaleTimeString();
+      speedHistory.unshift(`${now} — ↓${down} ↑${up} Mbps — ${ping}ms`);
+      if(speedHistory.length>5)speedHistory.pop();
+      document.getElementById('speedHistory').innerHTML=speedHistory.map(h=>`<div style="padding:4px 0;border-bottom:1px solid var(--border)">${h}</div>`).join('');
+      showToast(`⚡ ${down} Mbps download`);
+      return;
+    }
+    num.textContent=steps[count++];
+  },800);
+}
+
+// ─── STATS ───────────────────────────────────────────────
+function buildChart(){
+  const el=document.getElementById('miniChart');
+  const max=Math.max(...chartData,1);
+  el.innerHTML=chartData.map(v=>`<div class="bar" style="height:${Math.max(4,(v/max*100))}%"></div>`).join('');
+}
+
+function addLog(msg){
+  const el=document.getElementById('connLog');
+  const now=new Date().toLocaleTimeString();
+  const entry=`[${now}] ${msg}`;
+  const current=el.textContent==='— No connections yet —'?'':el.innerHTML;
+  el.innerHTML=`<div>${entry}</div>${current}`;
+}
+
+// ─── VPN RECS ─────────────────────────────────────────────
+function renderVPNRecs(){
+  renderVPNList('vpnRecList',VPN_RECS);
+  renderVPNList('freeVpnList',FREE_VPNS);
+}
+function renderVPNList(id,list){
+  document.getElementById(id).innerHTML=list.map(v=>`
+    <div class="vpn-rec-item" onclick="showToast('${v.name} — ${v.desc.slice(0,40)}...')">
+      <div class="vpn-logo-box" style="background:${v.color}22;color:${v.color}">${v.emoji}</div>
+      <div style="flex:1">
+        <div class="vpn-rec-name">${v.name}</div>
+        <div class="vpn-rec-tags">${v.tags.map(t=>`<span class="tag tag-${t}">${t.toUpperCase()}</span>`).join('')}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:3px">${v.desc}</div>
+      </div>
+      <div class="vpn-score">${v.score}</div>
+    </div>
+  `).join('');
+}
+
+// ─── SETTING TOGGLES ─────────────────────────────────────
+function toggleSetting(el){el.classList.toggle('on');}
+
+// ─── IP FETCH ────────────────────────────────────────────
+function fetchIP(){
+  document.getElementById('realIP').textContent='Detecting...';
+  fetch('https://api.ipify.org?format=json')
+    .then(r=>r.json())
+    .then(d=>{document.getElementById('realIP').textContent=d.ip;document.getElementById('ipFlag').textContent='📍';})
+    .catch(()=>{document.getElementById('realIP').textContent='192.168.1.x';});
+}
+
+// ─── LANG ─────────────────────────────────────────────────
+const LANG_STRINGS={
+  en:{connecting:'Connecting...',connected:'Connected',disconnected:'Disconnected'},
+  es:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado'},
+  ru:{connecting:'Подключение...',connected:'Подключено',disconnected:'Отключено'},
+};
+function setLang(code){showToast('Language set: '+code);}
+
+// ─── LANG MODAL (simple) ──────────────────────────────────
+function showLangModal(){showToast('Use Settings → Language to change');}
+
+// ─── TOAST ───────────────────────────────────────────────
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ─── UTILS ───────────────────────────────────────────────
+function rnd(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+</script>
 </body>
 </html>
